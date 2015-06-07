@@ -6,6 +6,7 @@ var data = { "name": "Commits Data", "commits": [{"commit":"808258b785829c0eaed9
 
 /*var data = { "name": "Commits Data", "commits": [{"commit":"808258b785829c0eaed965c9022da636f7630e00","author":"NickStepanenko <massaalonso@yandex.ru>","date":"Fri Jun 5 18:03:27 2015 +0800","comment":"Работа с функциями в JavaScript","content":[]},{"commit":"ddf1fdf4f5660fbff147a49ccfd8eb5edd49f548","author":"NickStepanenko <massaalonso@yandex.ru>","date":"Fri Jun 5 18:08:01 2015 +0800","comment":"Для начала определим две функции: первая будет принимать на вход два аргумента и возвращать их произведение, а вторая вычтет из первого аргумента сначала второй, а потом третий. Обе функции находятся в отдельных файлах. Так же не забываем подключить файлы в главном файле проекта — exec.js","content":[{"filename":"bin/exec.js","status":"Modified","changes":[{"changesStartLine":"0","changesCode":"+var applyContent = require(\"applyContent\");\n+var minusContent = require(\"minusContent\");\n+\n+console.log(applyContent(1, 5));\n+console.log(minusContent(16, 5, 8));\n\n"}]},{"filename":"lib/applyContent.js","status":"Modified","changes":[{"changesStartLine":"0","changesCode":"+module.exports = function (a, b) {\n+    return a*b;\n+};\n\n"}]},{"filename":"lib/minusContent.js","status":"Modified","changes":[{"changesStartLine":"0","changesCode":"+module.exports = function (a, b, c) {\n+    return (a - b - c);\n+};\n\n"}]}]},{"commit":"f387e44a0f8a36bf27afe74052380a6046997917","author":"NickStepanenko <massaalonso@yandex.ru>","date":"Fri Jun 5 18:10:30 2015 +0800","comment":"При запуске программы окно вывода указала нам на ошибку при вызове функций applyContent и minusContent. И это не удивительно, ведь мы забыли учесть вложенность файлов в нашем проекте. Функции require необходимо передать в качестве параметра полный путь от текущего файла до требуемого. Исправляем написанное и смотрим результат","content":[{"filename":"bin/exec.js","status":"Modified","changes":[{"changesStartLine":"1","changesCode":"-var applyContent = require(\"applyContent\");\n-var minusContent = require(\"minusContent\");\n+var applyContent = require(\"../lib/applyContent\");\n+var minusContent = require(\"../lib/minusContent\");\n \n console.log(applyContent(1, 5));\n console.log(minusContent(16, 5, 8));\n\n"}]}]}] };*/
 
+
 function getFiles() {
     var commits = [];
     var filesAndCodes = [];
@@ -26,29 +27,42 @@ function getFiles() {
     return commits;
 }
 
+var commitStages = [];
+
 function modifyData(filesData) {
-    var count_i = 0;
-    var commitStages = [];
     var currentStage = [];
+    var count_i = 0;
 
     while(count_i < filesData.length) {
         if(count_i == 0) {
+            var j = 0;
             for(j=0; j<filesData[count_i].length; j++) {
                 filesData[count_i][j].code = getCode(filesData[count_i][j].changes);
                 currentStage[currentStage.length] = filesData[count_i][j];
             }
+            j=0;
+
             commitStages[commitStages.length] = currentStage;
             currentStage = [];
-        } else {
+        }
+        else {
+            if(count_i == 3) {
+                var counter = 3;
+            }
             currentStage = commitStages[count_i-1];
 
+            var m = 0;
             for(m=0; m<currentStage.length; m++) {
-                currentStage[m].status = "Default";
+                if(!currentStage[m].status == "Deleted") {
+                    currentStage[m].status = "Default";
+                }
             }
+            m = 0;
 
+            var l = 0;
             for(l=0; l<filesData[count_i].length; l++) {
-
-                if(filesData[count_i][l].status = "Modified") {
+                if(filesData[count_i][l].status == "Modified") {
+                    var k = 0;
                     for(k=0; k<currentStage.length; k++) {
                         if(currentStage[k].filename == filesData[count_i][l].filename) {
                             currentStage[k].code =
@@ -56,29 +70,33 @@ function modifyData(filesData) {
                             currentStage[k].status = "Modified";
                         }
                     }
+                    k = 0;
                 }
                 else
 
-                if(filesData[count_i][l].status = "Created") {
+                if(filesData[count_i][l].status == "Created") {
                     currentStage[currentStage.length] = filesData[count_i][l];
                 }
                 else
 
-                if(filesData[count_i][l].status = "Deleted") {
-                    for(o=0; o<currentStage.length; o++) {
-                        if(currentStage[o].filename == filesData[count_i][l].filename) {
-                            currentStage[i].status = "Deleted";
+                if(filesData[count_i][l].status == "Deleted") {
+                    var p = 0;
+                    for(p=0; p<currentStage.length; p++) {
+                        if(currentStage[p].filename == filesData[count_i][l].filename) {
+                            currentStage[p].status = "Deleted";
                         }
                     }
+                    p = 0;
                 }
-
             }
-
+            l = 0;
             commitStages[commitStages.length] = currentStage;
             currentStage = [];
         }
+        currentStage = [];
         count_i++;
     }
+
     return commitStages;
 }
 
@@ -122,6 +140,5 @@ function applyPatch(code, patches) {
 
     return finalCode;
 }
-
-//var filesData = getFiles(data);
-console.log(modifyData(getFiles(data)));
+var filesData = modifyData(getFiles(data));
+console.log(filesData);
