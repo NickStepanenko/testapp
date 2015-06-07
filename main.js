@@ -53,7 +53,7 @@ function modifyData(filesData) {
 
             var m = 0;
             for(m=0; m<currentStage.length; m++) {
-                if(!currentStage[m].status == "Deleted") {
+                if(currentStage[m].status != "Deleted") {
                     currentStage[m].status = "Default";
                 }
             }
@@ -75,6 +75,7 @@ function modifyData(filesData) {
                 else
 
                 if(filesData[count_i][l].status == "Created") {
+                    filesData[count_i][l].code = getCode(filesData[count_i][l].changes);
                     currentStage[currentStage.length] = filesData[count_i][l];
                 }
                 else
@@ -93,7 +94,6 @@ function modifyData(filesData) {
             commitStages[commitStages.length] = currentStage;
             currentStage = [];
         }
-        currentStage = [];
         count_i++;
     }
 
